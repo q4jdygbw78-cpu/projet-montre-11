@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crown & Steel - Haute Horlogerie</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-lux: #ffffff;
+            --panel-bg: #fcfcfd;
+            --panel-border: #eeeeee;
+            --gold: #b38f4f;
+            --gold-light: #f9f6f0;
+            --text-main: #111111;
+            --text-muted: #777777;
+            --green: #2e7d32;
+            --red: #c62828;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-lux);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ÉCRAN D'ACCUEIL CINÉMATIQUE */
+        #landing-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-lux);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.6s ease;
+        }
+
+        .landing-logo {
+            width: 70px;
+            height: 70px;
+            fill: none;
+            stroke: var(--gold);
+            stroke-width: 1.5;
+            margin-bottom: 35px;
+        }
+
+        .landing-title {
+            font-size: 2.2rem;
+            font-weight: 200;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .landing-subtitle {
+            color: var(--gold);
+            font-size: 0.75rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-bottom: 60px;
+        }
+
+        .lux-btn {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--text-main);
+            padding: 14px 45px;
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .lux-btn:hover {
+            background: var(--gold);
+            color: white;
+            letter-spacing: 6px;
+        }
+
+        /* APPLICATION GLOBALE */
+        .app-container {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        /* NAVBAR PERMANENTE */
+        .navbar {
+            background-color: var(--bg-lux);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 100;
+        }
+
+        .menu-toggle, .search-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .menu-toggle svg, .search-toggle svg {
+            fill: none;
+            stroke: var(--text-main);
+            stroke-width: 1.5;
+            width: 24px;
+            height: 24px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo svg {
+            width: 28px;
+            height: 28px;
+            fill: none;
+            stroke: var(--gold);
+            stroke-width: 1.5;
+        }
+
+        .brand-logo h1 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 300;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        /* ONGLETS DE NAVIGATION HAUT DE GAMME */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            border-bottom: 1px solid var(--panel-border);
+            background: var(--bg-lux);
+        }
+
+        .tab-link {
+            padding: 14px 30px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-link.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+            font-weight: 500;
+        }
+
+        /* RECHERCHE */
+        .search-bar-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: var(--bg-lux);
+            box-sizing: border-box;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--panel-border);
+            display: none;
+        }
+
+        .search-bar-container.active { display: block; }
+
+        .search-bar-container input {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            color: var(--text-main);
+            padding: 14px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        /* TIROIR MARQUES */
+        .brands-drawer {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background-color: var(--bg-lux);
+            box-shadow: 15px 0 40px rgba(0,0,0,0.03);
+            z-index: 500;
+            transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            padding: 24px 0;
+            box-sizing: border-box;
+            border-right: 1px solid var(--panel-border);
+        }
+
+        .brands-drawer.open { left: 0; }
+
+        .drawer-header {
+            padding: 0 24px 24px 24px;
+            border-bottom: 1px solid var(--panel-border);
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            color: var(--gold);
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+
+        .brands-list { list-style: none; padding: 10px 0; margin: 0; overflow-y: auto; height: calc(100% - 50px); }
+        .brands-list li { padding: 16px 24px; cursor: pointer; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; transition: all 0.2s; color: var(--text-main); border-left: 3px solid transparent; }
+        .brands-list li:hover, .brands-list li.active { background: var(--panel-bg); color: var(--gold); border-left-color: var(--gold); }
+
+        /* SECTIONS DE CONTENU */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 117px);
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* SECTION DÉCOUVRIR (APP) */
+        .sidebar {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 14px;
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        /* FIX DU BUG DES CHIFFRES SUR LES BORDURES */
+        .watch-card {
+            background-color: var(--bg-lux);
+            border: 1px solid var(--panel-border);
+            padding: 16px 20px 20px 20px; /* Plus d'espace vers le bas */
+            cursor: pointer;
+            min-width: 190px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .watch-card.active { border-color: var(--gold); background: var(--gold-light); }
+        .card-brand { font-size: 0.65rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
+        .card-title { font-size: 0.85rem; font-weight: 400; margin: 0 0 14px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+        .card-footer { display: flex; justify-content: space-between; font-size: 0.85rem; padding-top: 4px; }
+
+        .content { padding: 24px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 24px; }
+
+        .hero-section {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 24px;
+            background-color: var(--panel-bg);
+            padding: 24px;
+            border: 1px solid var(--panel-border);
+            align-items: center;
+        }
+
+        .watch-dial-vector {
+            width: 110px;
+            height: 110px;
+            background-color: var(--bg-lux);
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            box-sizing: border-box;
+        }
+
+        .watch-dial-vector::before { content: ''; position: absolute; width: 1.5px; height: 30px; background-color: var(--text-main); top: 25px; left: calc(50% - 0.75px); transform-origin: bottom center; transform: rotate(35deg); }
+        .watch-dial-vector::after { content: ''; position: absolute; width: 1.5px; height: 22px; background-color: var(--gold); top: 33px; left: calc(50% - 0.75px); transform-origin: bottom center; transform: rotate(120deg); }
+        .dial-center { position: absolute; width: 5px; height: 5px; background-color: var(--text-main); border-radius: 50%; z-index: 10; }
+        .dial-index { position: absolute; width: 1px; height: 5px; background-color: var(--gold); }
+        .index-12 { top: 4px; left: 50%; width: 1.5px; height: 7px; transform: translateX(-50%); }
+        .index-6  { bottom: 4px; left: 50%; transform: translateX(-50%); }
+        .index-3  { right: 4px; top: 50%; width: 5px; height: 1px; transform: translateY(-50%); }
+        .index-9  { left: 4px; top: 50%; width: 5px; height: 1px; transform: translateY(-50%); }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        .metric-box { background-color: var(--bg-lux); border: 1px solid var(--panel-border); padding: 18px; text-align: center; }
+        .metric-box h3 { margin: 0 0 8px 0; font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
+        .metric-box p { margin: 0; font-size: 1.2rem; font-weight: 300; color: var(--text-main); }
+
+        .chart-container { background-color: var(--panel-bg); border: 1px solid var(--panel-border); padding: 24px; height: 220px; }
+
+        /* SECTION EN SAVOIR PLUS (HISTOIRE) */
+        .history-container {
+            padding: 30px 24px;
+            overflow-y: auto;
+            flex-grow: 1;
+            background: var(--panel-bg);
+        }
+
+        .history-article {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-lux);
+            border: 1px solid var(--panel-border);
+            padding: 40px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.01);
+        }
+
+        .history-article h2 {
+            font-size: 1.6rem;
+            font-weight: 300;
+            color: var(--gold);
+            letter-spacing: 2px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 15px;
+        }
+
+        .history-article p {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .history-highlight {
+            border-left: 2px solid var(--gold);
+            padding-left: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); z-index: 400; display: none; }
+
+        @media (min-width: 768px) {
+            .main-layout { grid-template-columns: 340px 1fr; display: grid; height: calc(100vh - 122px); }
+            .sidebar { flex-direction: column; max-height: none; overflow-y: auto; overflow-x: hidden; border-right: 1px solid var(--panel-border); border-bottom: none; padding: 24px; gap: 16px; }
+            .hero-section { grid-template-columns: 140px 1fr; padding: 35px; }
+            .watch-dial-vector { width: 140px; height: 140px; }
+            .watch-dial-vector::before { height: 42px; top: 28px; }
+            .watch-dial-vector::after { height: 30px; top: 40px; }
+            .metrics-grid { grid-template-columns: repeat(4, 1fr); }
+            .chart-container { height: 350px; }
+            .tab-content.active { display: grid; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ÉCRAN D'ACCUEIL SIMPLE -->
+    <div id="landing-page">
+        <svg class="landing-logo" viewBox="0 0 100 100">
+            <path d="M 25,68 L 32,38 L 50,52 L 68,38 L 75,68 Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="25" y1="68" x2="75" y2="68" stroke-linecap="round"/>
+            <circle cx="50" cy="52" r="1.5" fill="#b38f4f"/>
+            <circle cx="32" cy="38" r="2" fill="#b38f4f"/>
+            <circle cx="68" cy="38" r="2" fill="#b38f4f"/>
+            <circle cx="50" cy="27" r="2" fill="#b38f4f"/>
+            <path d="M 50,29 L 50,42" stroke-dasharray="1,2"/>
+        </svg>
+        <div class="landing-title">Crown & Steel</div>
+        <div class="landing-subtitle">Haute Horlogerie Market Intelligence</div>
+        <button class="lux-btn" onclick="finalizeEntrance()">Entrer dans l'espace</button>
+    </div>
+
+    <div class="overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+    <!-- TIROIR MANUFACTURES -->
+    <div class="brands-drawer" id="brandsDrawer">
+        <div class="drawer-header">
+            <span>Manufactures d'Élite</span>
+            <button class="drawer-close" onclick="toggleMenu()">✕</button>
+        </div>
+        <ul class="brands-list" id="drawerBrandsList"></ul>
+    </div>
+
+    <!-- MAIN APP STRUCTURE -->
+    <div class="app-container" id="appInterface">
+        
+        <!-- HEADER / NAVBAR INTERACTIF & FIXE -->
+        <div class="navbar">
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <svg viewBox="0 0 24 24"><path d="M4 6H20M4 12H20M4 18H18"/></svg>
+            </button>
+            <div class="brand-logo">
+                <svg viewBox="0 0 100 100">
+                    <path d="M 25,68 L 32,38 L 50,52 L 68,38 L 75,68 Z" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="25" y1="68" x2="75" y2="68"/>
+                </svg>
+                <h1>Crown & Steel</h1>
+            </div>
+            <button class="search-toggle" onclick="toggleSearch()">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16L20 20"/></svg>
+            </button>
+
+            <div class="search-bar-container" id="searchBarBox">
+                <input type="text" id="searchInput" placeholder="Rechercher par calibre, manufacture, modèle..." oninput="filterWatches()">
+            </div>
+        </div>
+
+        <!-- SYSTÈME D'ONGLETS NAV -->
+        <div class="nav-tabs">
+            <div class="tab-link active" id="tab-discover" onclick="switchTab('discover')">Découvrir</div>
+            <div class="tab-link" id="tab-learn" onclick="switchTab('learn')">En savoir plus</div>
+        </div>
+
+        <!-- ZONE DES CONTENUS DYNAMIQUES -->
+        <div class="main-layout">
+            
+            <!-- ONGLET 1 : DÉCOUVRIR (L'APPLICATION DE MARCHÉ) -->
+            <div id="content-discover" class="tab-content active">
+                <div style="display: contents;">
+                    <div class="sidebar" id="sidebarList"></div>
+                    <div class="content">
+                        <div class="hero-section">
+                            <div class="watch-dial-vector">
+                                <div class="dial-center"></div>
+                                <div class="dial-index index-12"></div>
+                                <div class="dial-index index-6"></div>
+                                <div class="dial-index index-3"></div>
+                                <div class="dial-index index-9"></div>
+                            </div>
+                            <div>
+                                <h2 id="viewBrand" style="color: var(--gold); margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2.5px; font-weight: 400;">Manufacture</h2>
+                                <h1 id="viewModel" style="margin: 6px 0; font-size: 1.5rem; font-weight: 300; letter-spacing: 0.5px; color: var(--text-main);">Modèle</h1>
+                                <p id="viewRef" style="color: var(--text-muted); margin: 0; font-size: 0.8rem; font-weight: 300; letter-spacing: 0.5px;"></p>
+                            </div>
+                        </div>
+
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <h3>Cote Marché</h3>
+                                <p id="mPrice" style="color: var(--gold); font-weight: 400;">-</p>
+                            </div>
+                            <div class="metric-box">
+                                <h3>Évolution (6m)</h3>
+                                <p id="mTrend">-</p>
+                            </div>
+                            <div class="metric-box">
+                                <h3>Indice de Demande</h3>
+                                <p id="mDemand">-</p>
+                            </div>
+                            <div class="metric-box">
+                                <h3>Flux / mois</h3>
+                                <p id="mVolume">-</p>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET 2 : EN SAVOIR PLUS (HISTOIRE DE L'HORLOGERIE) -->
+            <div id="content-learn" class="tab-content">
+                <div class="history-container">
+                    <article class="history-article">
+                        <h2>L'Héritage du Temps et de l'Acier</h2>
+                        <p>L'histoire de la Haute Horlogerie est une quête séculaire combinant les sciences mathématiques, la métallurgie fine et les métiers d'art décoratifs. Née de la nécessité de guider les explorateurs en mer, elle s'est métamorphosée en l'expression ultime du luxe mécanique et de la distinction technique.</p>
+                        
+                        <div class="history-highlight">
+                            "Le temps ne respecte pas ce qui se fait sans lui. Chaque garde-temps d'exception requiert des centaines d'heures de façonnement pour transformer l'énergie brute en régularité poétique."
+                        </div>
+
+                        <p>Des premiers mécanismes de poche du XVIe siècle aux spiraux en silicium contemporains, les maîtres horlogers ont sans cesse repoussé les limites de la physique. La miniaturisation extrême et la création de complications magistrales – telles que le Tourbillon, le Quantième Perpétuel et la Répétition Minutes – demeurent le sommet absolu de l'ingénierie mécanique humaine.</p>
+                        <p>Aujourd'hui, posséder une pièce de haute horlogerie dépasse la simple lecture de l'heure : c'est acquérir une œuvre d'art cinétique, un chef-d'œuvre de micro-architecture transmissible de génération en génération.</p>
+                    </article>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // BASE DE DONNÉES STRUCTURÉE : 10 MARQUES × 3 MODÈLES
+        const database = [
+            { id: 1, brand: "Rolex", model: "Daytona 'Panda'", ref: "126500LN", price: 31500, trend: "+4.2%", trendDir: "up", demand: "Ultra Élevée", volume: 48, history: [28500, 29200, 30000, 30800, 31100, 31500] },
+            { id: 2, brand: "Rolex", model: "Submariner 'Starbucks'", ref: "126610LV", price: 16100, trend: "+1.8%", trendDir: "up", demand: "Très Haute", volume: 55, history: [15400, 15600, 15750, 15800, 15950, 16100] },
+            { id: 3, brand: "Rolex", model: "GMT-Master II 'Pepsi'", ref: "126710BLRO", price: 22400, trend: "+3.5%", trendDir: "up", demand: "Saturée", volume: 32, history: [21000, 21300, 21700, 22000, 22200, 22400] },
+            { id: 4, brand: "Patek Philippe", model: "Nautilus Cadran Bleu", ref: "5711/1A-010", price: 118000, trend: "-1.4%", trendDir: "down", demand: "Exceptionnelle", volume: 4, history: [121000, 120000, 119000, 118500, 118000, 118000] },
+            { id: 5, brand: "Patek Philippe", model: "Aquanaut Travel Time", ref: "5164A", price: 72000, trend: "+2.0%", trendDir: "up", demand: "Très Élevée", volume: 8, history: [69000, 70100, 70800, 71200, 71700, 72000] },
+            { id: 6, brand: "Patek Philippe", model: "Chronographe Quantième", ref: "5270P", price: 195000, trend: "+0.5%", trendDir: "up", demand: "Prestige Rare", volume: 1, history: [193000, 194000, 194000, 194500, 195000, 195000] },
+            { id: 7, brand: "Audemars Piguet", model: "Royal Oak 'Jumbo'", ref: "16202ST", price: 74500, trend: "+1.9%", trendDir: "up", demand: "Intense", volume: 11, history: [72000, 72500, 73100, 73800, 74000, 74500] },
+            { id: 8, brand: "Audemars Piguet", model: "Royal Oak Chronographe", ref: "26240ST", price: 51000, trend: "-0.8%", trendDir: "down", demand: "Forte", volume: 15, history: [52000, 51800, 51500, 51300, 51000, 51000] },
+            { id: 9, brand: "Audemars Piguet", model: "Code 11.59 Tourbillon", ref: "26396BC", price: 135000, trend: "+1.1%", trendDir: "up", demand: "Ciblée", volume: 3, history: [132000, 133000, 133500, 134000, 134200, 135000] },
+            { id: 10, brand: "Vacheron Constantin", model: "Overseas Cadran Bleu", ref: "4500V/110A", price: 29500, trend: "+1.1%", trendDir: "up", demand: "Haute", volume: 14, history: [28900, 29000, 29100, 29300, 29400, 29500] },
+            { id: 11, brand: "Vacheron Constantin", model: "Historiques Corne", ref: "5000H", price: 38000, trend: "+0.2%", trendDir: "up", demand: "Collectionneur", volume: 4, history: [37800, 37900, 37900, 38000, 38000, 38000] },
+            { id: 12, brand: "Vacheron Constantin", model: "Patrimony Manuel", ref: "81180", price: 19200, trend: "-0.5%", trendDir: "down", demand: "Stable", volume: 8, history: [19500, 19400, 19400, 19300, 19200, 19200] },
+            { id: 13, brand: "Richard Mille", model: "RM 67-02 Van Niekerk", ref: "RM67-02", price: 285000, trend: "+5.2%", trendDir: "up", demand: "Élitiste", volume: 2, history: [270000, 274000, 277000, 281000, 283000, 285000] },
+            { id: 14, brand: "Richard Mille", model: "RM 35-03 Rafael Nadal", ref: "RM35-03", price: 340000, trend: "+4.0%", trendDir: "up", demand: "Spéculative", volume: 1, history: [325000, 328000, 332000, 335000, 339000, 340000] },
+            { id: 15, brand: "Richard Mille", model: "RM 11-03 Flyback", ref: "RM11-03", price: 210000, trend: "-1.2%", trendDir: "down", demand: "Forte", volume: 3, history: [215000, 214000, 212000, 211000, 210000, 210000] },
+            { id: 16, brand: "A. Lange & Söhne", model: "Lange 1 Or Rose", ref: "191.032", price: 42300, trend: "+0.4%", trendDir: "up", demand: "Exclusive", volume: 5, history: [41900, 42000, 42100, 42200, 42300, 42300] },
+            { id: 17, brand: "A. Lange & Söhne", model: "Datograph Up/Down", ref: "405.035", price: 92000, trend: "+2.5%", trendDir: "up", demand: "Très Prisée", volume: 2, history: [89000, 90000, 90500, 91200, 91800, 92000] },
+            { id: 18, brand: "A. Lange & Söhne", model: "Odysseus Acier", ref: "363.179", price: 55000, trend: "+3.1%", trendDir: "up", demand: "Intense", volume: 4, history: [53000, 53500, 54000, 54200, 54800, 55000] },
+            { id: 19, brand: "F.P. Journe", model: "Chronomètre Bleu", ref: "CB Tantalum", price: 89000, trend: "+8.5%", trendDir: "up", demand: "Historique", volume: 3, history: [81000, 83500, 85000, 86800, 88000, 89000] },
+            { id: 20, brand: "F.P. Journe", model: "Souverain Tourbillon", ref: "TN Or", price: 240000, trend: "+6.0%", trendDir: "up", demand: "Souveraine", volume: 1, history: [225000, 228000, 232000, 235000, 238000, 240000] },
+            { id: 21, brand: "F.P. Journe", model: "Elegante 48 Titalyt", ref: "EL-48", price: 41000, trend: "+1.9%", trendDir: "up", demand: "Haute", volume: 7, history: [40000, 40200, 40500, 40800, 40900, 41000] },
+            { id: 22, brand: "Cartier", model: "Santos de Cartier ADLC", ref: "WSSA0039", price: 9100, trend: "+1.3%", trendDir: "up", demand: "Croissante", volume: 45, history: [8800, 8850, 8900, 8980, 9050, 9100] },
+            { id: 23, brand: "Cartier", model: "Tank Louis Cartier", ref: "WGTA0011", price: 13800, trend: "+0.5%", trendDir: "up", demand: "Classique", volume: 20, history: [13600, 13700, 13700, 13750, 13800, 13800] },
+            { id: 24, brand: "Cartier", model: "Privé Tank Asymétrique", ref: "WGTA0043", price: 32000, trend: "+2.2%", trendDir: "up", demand: "Rare", volume: 3, history: [31000, 31300, 31500, 31700, 31900, 32000] },
+            { id: 25, brand: "Omega", model: "Speedmaster Moonwatch", ref: "310.30.42", price: 7600, trend: "+0.9%", trendDir: "up", demand: "Continue", volume: 68, history: [7400, 7450, 7500, 7520, 7560, 7600] },
+            { id: 26, brand: "Omega", model: "Seamaster 300M NTTD", ref: "210.90.42", price: 10200, trend: "+1.2%", trendDir: "up", demand: "Soutenue", volume: 34, history: [10000, 10050, 10100, 10100, 10150, 10200] },
+            { id: 27, brand: "Omega", model: "Constellation Co-Axial", ref: "131.33.41", price: 6900, trend: "-0.2%", trendDir: "down", demand: "Stable", volume: 18, history: [7000, 6980, 6950, 6920, 6900, 6900] },
+            { id: 28, brand: "Jaeger-LeCoultre", model: "Reverso Tribute", ref: "Q3978460", price: 10400, trend: "+2.2%", trendDir: "up", demand: "Élevée", volume: 22, history: [9900, 10000, 10150, 10250, 10300, 10400] },
+            { id: 29, brand: "Jaeger-LeCoultre", model: "Master Ultra Thin Moon", ref: "Q1368430", price: 12100, trend: "+0.8%", trendDir: "up", demand: "Régulière", volume: 15, history: [11900, 12000, 12000, 12050, 12100, 12100] },
+            { id: 30, brand: "Jaeger-LeCoultre", model: "Polaris Chronograph", ref: "Q9028180", price: 14300, trend: "+1.5%", trendDir: "up", demand: "Sélective", volume: 9, history: [14000, 14100, 14150, 14200, 14250, 14300] }
+        ];
+
+        let chartInstance = null;
+        const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"];
+        let currentSelectedBrand = "all";
+
+        window.onload = function() {
+            buildBrandDrawer();
+        };
+
+        function finalizeEntrance() {
+            const landing = document.getElementById('landing-page');
+            const app = document.getElementById('appInterface');
+            landing.style.transform = 'translateY(-100vh)';
+            landing.style.opacity = '0';
+            app.style.display = 'flex';
+            setTimeout(() => {
+                app.style.opacity = '1';
+                filterWatches();
+            }, 200);
+        }
+
+        /* GESTION COMPLÈTE DES ONGLETS DE NAVIGATION */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`content-${tabId}`).classList.add('active');
+
+            // Force la réinitialisation du graphique s'il repasse sur Découvrir
+            if(tabId === 'discover') {
+                filterWatches();
+            }
+        }
+
+        function buildBrandDrawer() {
+            const listContainer = document.getElementById('drawerBrandsList');
+            if(!listContainer) return;
+            listContainer.innerHTML = "";
+
+            const itemAll = document.createElement('li');
+            itemAll.innerText = "Toutes les manufactures";
+            itemAll.className = "active";
+            itemAll.onclick = () => selectBrandFromDrawer("all", itemAll);
+            listContainer.appendChild(itemAll);
+
+            const brands = [...new Set(database.map(w => w.brand))];
+            brands.forEach(b => {
+                const li = document.createElement('li');
+                li.innerText = b;
+                li.onclick = () => selectBrandFromDrawer(b, li);
+                listContainer.appendChild(li);
+            });
+        }
+
+        function selectBrandFromDrawer(brand, element) {
+            currentSelectedBrand = brand;
+            document.querySelectorAll('.brands-list li').forEach(li => li.classList.remove('active'));
+            element.classList.add('active');
+            toggleMenu();
+            switchTab('discover'); // Force à revenir sur "Découvrir" si on filtre
+            filterWatches();
+        }
+
+        function toggleMenu() {
+            const drawer = document.getElementById('brandsDrawer');
+            const overlay = document.getElementById('menuOverlay');
+            if(drawer.classList.contains('open')) {
+                drawer.classList.remove('open');
+                overlay.style.display = 'none';
+            } else {
+                drawer.classList.add('open');
+                overlay.style.display = 'block';
+            }
+        }
+
+        function toggleSearch() {
+            const searchBox = document.getElementById('searchBarBox');
+            searchBox.classList.toggle('active');
+            if(searchBox.classList.contains('active')) {
+                document.getElementById('searchInput').focus();
+            }
+        }
+
+        function filterWatches() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = database.filter(watch => {
+                const matchesSearch = watch.brand.toLowerCase().includes(searchVal) || 
+                                      watch.model.toLowerCase().includes(searchVal) || 
+                                      watch.ref.toLowerCase().includes(searchVal);
+                const matchesBrand = currentSelectedBrand === "all" || watch.brand === currentSelectedBrand;
+                return matchesSearch && matchesBrand;
+            });
+            displayList(filtered);
+            if(filtered.length > 0) {
+                selectWatch(filtered[0]);
+            }
+        }
+
+        function displayList(watches) {
+            const listContainer = document.getElementById('sidebarList');
+            if(!listContainer) return;
+            listContainer.innerHTML = "";
+            
+            watches.forEach((watch) => {
+                const card = document.createElement('div');
+                card.id = `card-${watch.id}`;
+                card.className = "watch-card";
+                card.innerHTML = `
+                    <div>
+                        <div class="card-brand">${watch.brand}</div>
+                        <div class="card-title">${watch.model}</div>
+                    </div>
+                    <div class="card-footer">
+                        <span style="color:var(--gold); font-weight:400;">${watch.price.toLocaleString('fr-FR')} €</span>
+                        <span style="color: ${watch.trendDir === 'up' ? 'var(--green)' : 'var(--red)'}; font-weight:400;">${watch.trend}</span>
+                    </div>
+                `;
+                card.onclick = () => selectWatch(watch);
+                listContainer.appendChild(card);
+            });
+        }
+
+        function selectWatch(watch) {
+            if (document.getElementById('content-discover').classList.contains('active') === false) return;
+
+            document.querySelectorAll('.watch-card').forEach(c => c.classList.remove('active'));
+            const activeCard = document.getElementById(`card-${watch.id}`);
+            if(activeCard) activeCard.classList.add('active');
+
+            document.getElementById('viewBrand').innerText = watch.brand;
+            document.getElementById('viewModel').innerText = watch.model;
+            document.getElementById('viewRef').innerText = `Réf : ${watch.ref}`;
+            document.getElementById('mPrice').innerText = `${watch.price.toLocaleString('fr-FR')} €`;
+            
+            const trendBox = document.getElementById('mTrend');
+            trendBox.innerText = watch.trend;
+            trendBox.style.color = watch.trendDir === 'up' ? 'var(--green)' : 'var(--red)';
+            
+            document.getElementById('mDemand').innerText = watch.demand;
+            document.getElementById('mVolume').innerText = `${watch.volume} u.`;
+
+            const canvas = document.getElementById('mainChart');
+            if(!canvas) return;
+            
+            if (chartInstance) chartInstance.destroy();
+            const ctx = canvas.getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        data: watch.history,
+                        borderColor: '#b38f4f',
+                        backgroundColor: 'rgba(179, 143, 79, 0.03)',
+                        borderWidth: 1.5,
+                        fill: true,
+                        tension: 0.12,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#b38f4f'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: '#f0f0f2' }, ticks: { color: '#777777', font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { color: '#777777', font: { size: 10 } } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
